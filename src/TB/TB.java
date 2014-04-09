@@ -14,6 +14,11 @@ public class TB extends JFrame
     /**
 	 * 
 	 */
+	// My variables
+	public static final double timeMultiplier = 4.0;
+	//private static int eastCars = 0;
+	
+	
 	//constants
 	private static final long serialVersionUID = 42L; // for serialization
 	
@@ -51,7 +56,7 @@ public class TB extends JFrame
 	private static boolean[] carSensed = {false, false};
 	private static boolean[] sensorTriggered = {false, false};
 	
-	protected static FlowControl myFlowControl;
+	//protected static FlowControl myFlowControl;
 		
 	public TB()
 	{
@@ -184,7 +189,7 @@ public class TB extends JFrame
         //start the main animation loop
 		while (continuing)
 		{
-			Thread.sleep(1000);
+			Thread.sleep((long)(1000.0/timeMultiplier));
 			if (directionWE)
 			{
                 // direction of flow is west-to-east
@@ -233,7 +238,7 @@ public class TB extends JFrame
                     // move car onto bridge
 					carWaiting[EAST_END] = false;
                     eastWaitPos[eastWaitPos.length - 1].setVisible(false);
-                    carWaiting[EAST_END - 1] = false;
+                    //carWaiting[EAST_END - 1] = false;
                     eastWaitPos[eastWaitPos.length - 2].setVisible(false);
                     carPresent[MAX_CARS - 1] = true;
                     carPresent[MAX_CARS - 2] = true;
@@ -268,8 +273,11 @@ public class TB extends JFrame
 				eastButton.setEnabled(false);
                 carWaiting[EAST_END] = true;
                 carSensed[EAST_END] = true;
-                carWaiting[EAST_END - 1] = true;
-                carSensed[EAST_END - 1] = true;
+                //eastCars++;
+                //System.err.println(eastCars);
+                
+                //carWaiting[EAST_END - 1] = true;
+                //carSensed[EAST_END - 1] = true;
                 sensorTriggered[EAST_END] = false;
                 eastWaitPos[eastWaitPos.length - 1].setVisible(true);
                 eastWaitPos[eastWaitPos.length - 2].setVisible(true);

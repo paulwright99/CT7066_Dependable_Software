@@ -109,7 +109,7 @@ public abstract class TrafficLightAbs extends Thread implements ActionListener
     */
 	protected void startTimer(int seconds)
 	{
-		myTimer = new Timer(seconds * 1000, this); //convert seconds to millisecs
+		myTimer = new Timer((int)((double)(seconds * 1000) / TB.timeMultiplier), this); //convert seconds to millisecs
 		myTimer.start();
 	} //startTimer
 

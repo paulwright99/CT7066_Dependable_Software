@@ -1,5 +1,7 @@
 package TB;
 
+
+
 /**
   Controls the flow of traffic over the bridge
   
@@ -21,8 +23,6 @@ package TB;
 
   @author Peter Annesley
   @version 1.3 February 2006
-  
-  // Test change 2
   
 */
 public class FlowControl extends FlowControlAbs
@@ -48,7 +48,8 @@ public class FlowControl extends FlowControlAbs
 	protected static final int MIN_EW = 20;
 	protected static final int MAX_WAIT = 10;
 	protected static final int TIME_CLEAR = 12;
-
+	protected static final int TIME_ONE_SECOND = 1;
+	
 	/**
 	  Constructor for FlowControl
 	*/
@@ -68,6 +69,9 @@ public class FlowControl extends FlowControlAbs
 	{
 		state = STOP_IN; //initial state
 		startTimer(TIME_CLEAR); //initial timer
+		
+
+		
 	} //startRunning
 	
     /**
@@ -75,10 +79,11 @@ public class FlowControl extends FlowControlAbs
     */
 	protected void timeout()
 	{
+				
 		switch (state)
 		{
 			case FLOW_OUT_MIN:
-				startTimer(1);
+				startTimer(TIME_ONE_SECOND);
 				state = FLOW_OUT;
 				break;
 			case FLOW_OUT:
@@ -92,7 +97,7 @@ public class FlowControl extends FlowControlAbs
 				else
 				{
 					// continue in current state
-					startTimer(1);
+					startTimer(TIME_ONE_SECOND);
 				}
 				break;
 			case STOP_OUT:
