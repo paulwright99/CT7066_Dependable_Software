@@ -24,6 +24,8 @@ package TB;
   @author Peter Annesley
   @version 1.3 February 2006
   
+  Test check in for branch PartA_iii_without_state_pattern 
+  
 */
 public class FlowControl extends FlowControlAbs
 {
@@ -69,9 +71,6 @@ public class FlowControl extends FlowControlAbs
 	{
 		state = STOP_IN; //initial state
 		startTimer(TIME_CLEAR); //initial timer
-		
-
-		
 	} //startRunning
 	
     /**
