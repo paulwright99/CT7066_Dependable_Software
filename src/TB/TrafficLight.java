@@ -18,7 +18,7 @@ public class TrafficLight extends TrafficLightAbs
 	protected static final int TURNING_RED = 4;
 	
 	//timer constants
-	protected static final int TIME_CHANGE = 1;
+	public static final int TIME_CHANGE = 1;
 
 	/**
 	  Constructor for TrafficLight

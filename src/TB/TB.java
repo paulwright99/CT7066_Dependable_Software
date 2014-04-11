@@ -209,7 +209,8 @@ public class TB extends JFrame
                     westWaitPos[1].setVisible(false);
                     carPresent[0] = true;
                     carPresent[1] = true;
-                }
+   			
+				}
                 
                 if (carSensed[WEST_END]
                 && (!carWaiting[WEST_END])
@@ -242,7 +243,9 @@ public class TB extends JFrame
                     eastWaitPos[eastWaitPos.length - 2].setVisible(false);
                     carPresent[MAX_CARS - 1] = true;
                     carPresent[MAX_CARS - 2] = true;
-                }
+                
+                    FlowControl.carsGoneEW = true;
+				}
                 
                 if (carSensed[EAST_END]
                 && (!carWaiting[EAST_END])

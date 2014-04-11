@@ -24,7 +24,7 @@ package TB;
   @author Peter Annesley
   @version 1.3 February 2006
   
-  // PartA_iii....
+
   
 */
 public class FlowControl extends FlowControlAbs
@@ -36,21 +36,30 @@ public class FlowControl extends FlowControlAbs
 	protected VehicleSensor eastVehicleSensor;
 	protected VehicleSensor westVehicleSensor;
 	
+	public static boolean carsGoneEW;
+	protected int intervalsDone;
+	
+
+
 	protected static final int WEST_END = 0;
 	protected static final int EAST_END = 1;
     
 	// state constants
-	protected static final int FLOW_OUT_MIN = 1;
+	protected static final int FLOW_OUT_PRIORITY = 1;
 	protected static final int FLOW_OUT = 2;
 	protected static final int STOP_OUT = 3;
 	protected static final int FLOW_IN = 4;
 	protected static final int STOP_IN = 5;
 	
 	//timer constants
-	protected static final int MIN_EW = 20;
-	protected static final int MAX_WAIT = 10;
+	protected static final int PRIORITY_INTERVAL_EW = 5;
+	protected static final int NORMAL_INTERVAL_EW = 1;
+	protected static final int NORMAL_INTERVAL_WE = 5;
 	protected static final int TIME_CLEAR = 12;
-	protected static final int TIME_ONE_SECOND = 1;
+	
+	
+	// count constants
+	protected static final int PRIORITY_INTERVAL_NUM = 4;
 	
 	/**
 	  Constructor for FlowControl
@@ -71,6 +80,8 @@ public class FlowControl extends FlowControlAbs
 	{
 		state = STOP_IN; //initial state
 		startTimer(TIME_CLEAR); //initial timer
+		carsGoneEW = false;
+		intervalsDone = 0;
 	} //startRunning
 	
     /**
@@ -81,9 +92,28 @@ public class FlowControl extends FlowControlAbs
 				
 		switch (state)
 		{
-			case FLOW_OUT_MIN:
-				startTimer(TIME_ONE_SECOND);
-				state = FLOW_OUT;
+			case FLOW_OUT_PRIORITY:
+				
+				if(!carsGoneEW && westVehicleSensor.vehicleSensed())
+				{
+					// Change traffic flow from east to west
+					startTimer(TIME_CLEAR);
+					eastTrafficLight.turnToRed();
+					state = STOP_OUT;
+				}
+				else if(intervalsDone >= PRIORITY_INTERVAL_NUM) 
+				{
+					// Change from priority flow to normal flow
+					startTimer(NORMAL_INTERVAL_EW);
+					state = FLOW_OUT;
+				}
+				else
+				{
+					intervalsDone++;
+					startTimer(PRIORITY_INTERVAL_EW);
+					carsGoneEW = false;
+				}
+
 				break;
 			case FLOW_OUT:
 				if (westVehicleSensor.vehicleSensed())
@@ -96,23 +126,34 @@ public class FlowControl extends FlowControlAbs
 				else
 				{
 					// continue in current state
-					startTimer(TIME_ONE_SECOND);
+					startTimer(NORMAL_INTERVAL_EW);
 				}
 				break;
 			case STOP_OUT:
-				startTimer(MAX_WAIT);
+				startTimer(TrafficLight.TIME_CHANGE + NORMAL_INTERVAL_WE);
 				westTrafficLight.turnToGreen();
 				state = FLOW_IN;
 				break;
 			case FLOW_IN:
-				startTimer(TIME_CLEAR);
-				westTrafficLight.turnToRed();
-				state = STOP_IN;
+				
+				if( eastVehicleSensor.vehicleSensed() )
+				{
+					//Change flow from west to east
+					startTimer(TIME_CLEAR);
+					westTrafficLight.turnToRed();
+					state = STOP_IN;
+				}
+				else
+				{
+					startTimer(NORMAL_INTERVAL_WE);
+				}
 				break;
 			case STOP_IN:
-				startTimer(MIN_EW);
+				startTimer(TrafficLight.TIME_CHANGE + PRIORITY_INTERVAL_EW);
 				eastTrafficLight.turnToGreen();
-				state = FLOW_OUT_MIN;
+				state = FLOW_OUT_PRIORITY;
+				intervalsDone = 1;
+				carsGoneEW = false;
 				break;
 		}
 	} //timeout
