@@ -27,35 +27,35 @@ package TB;
 
   
 */
-public class FlowControl extends FlowControlAbs
+public class FlowControl extends FlowControlAbs implements FlowState
 {
-	// FlowControl attributes
-	protected int state;
-	protected TrafficLight eastTrafficLight;
-	protected TrafficLight westTrafficLight;
+	// State attributes
+	public FlowState state;
+	public FlowState flowOutPriority;
+	public FlowState flowOut;
+	public FlowState stopOut;
+	public FlowState flowIn;
+	public FlowState stopIn;
+	
+	
+	public TrafficLight eastTrafficLight;
+	public TrafficLight westTrafficLight;
 	protected VehicleSensor eastVehicleSensor;
 	protected VehicleSensor westVehicleSensor;
 	
 	public static boolean carsGoneEW;
-	protected int intervalsDone;
+	public int intervalsDone;
 	
-
 
 	protected static final int WEST_END = 0;
 	protected static final int EAST_END = 1;
     
-	// state constants
-	protected static final int FLOW_OUT_PRIORITY = 1;
-	protected static final int FLOW_OUT = 2;
-	protected static final int STOP_OUT = 3;
-	protected static final int FLOW_IN = 4;
-	protected static final int STOP_IN = 5;
 	
 	//timer constants
-	protected static final int PRIORITY_INTERVAL_EW = 5;
-	protected static final int NORMAL_INTERVAL_EW = 1;
-	protected static final int NORMAL_INTERVAL_WE = 5;
-	protected static final int TIME_CLEAR = 12;
+	public static final int PRIORITY_INTERVAL_EW = 5;
+	public static final int NORMAL_INTERVAL_EW = 1;
+	public static final int NORMAL_INTERVAL_WE = 5;
+	public static final int TIME_CLEAR = 12;
 	
 	
 	// count constants
@@ -71,6 +71,13 @@ public class FlowControl extends FlowControlAbs
 		westTrafficLight = westTL;
 		eastVehicleSensor = eastVS;
 		westVehicleSensor = westVS;
+
+		flowOutPriority = new FlowOutPriority(this);
+		flowOut = new FlowOut(this);
+		stopOut = new StopOut(this);
+		flowIn = new FlowIn(this);
+		stopIn = new StopIn(this);
+	
 	} //FlowControl
 	
     /**
@@ -78,7 +85,7 @@ public class FlowControl extends FlowControlAbs
 	*/
     protected void startRunning()
 	{
-		state = STOP_IN; //initial state
+		state = stopIn; //initial state
 		startTimer(TIME_CLEAR); //initial timer
 		carsGoneEW = false;
 		intervalsDone = 0;
@@ -87,74 +94,8 @@ public class FlowControl extends FlowControlAbs
     /**
 	  performs timed actions according to State Diagram
     */
-	protected void timeout()
+	public void timeout()
 	{
-				
-		switch (state)
-		{
-			case FLOW_OUT_PRIORITY:
-				
-				if(!carsGoneEW && westVehicleSensor.vehicleSensed())
-				{
-					// Change traffic flow from east to west
-					startTimer(TIME_CLEAR);
-					eastTrafficLight.turnToRed();
-					state = STOP_OUT;
-				}
-				else if(intervalsDone >= PRIORITY_INTERVAL_NUM) 
-				{
-					// Change from priority flow to normal flow
-					startTimer(NORMAL_INTERVAL_EW);
-					state = FLOW_OUT;
-				}
-				else
-				{
-					intervalsDone++;
-					startTimer(PRIORITY_INTERVAL_EW);
-					carsGoneEW = false;
-				}
-
-				break;
-			case FLOW_OUT:
-				if (westVehicleSensor.vehicleSensed())
-				{
-					// guard is true
-					startTimer(TIME_CLEAR);
-					eastTrafficLight.turnToRed();
-					state = STOP_OUT;
-				}
-				else
-				{
-					// continue in current state
-					startTimer(NORMAL_INTERVAL_EW);
-				}
-				break;
-			case STOP_OUT:
-				startTimer(TrafficLight.TIME_CHANGE + NORMAL_INTERVAL_WE);
-				westTrafficLight.turnToGreen();
-				state = FLOW_IN;
-				break;
-			case FLOW_IN:
-				
-				if( eastVehicleSensor.vehicleSensed() )
-				{
-					//Change flow from west to east
-					startTimer(TIME_CLEAR);
-					westTrafficLight.turnToRed();
-					state = STOP_IN;
-				}
-				else
-				{
-					startTimer(NORMAL_INTERVAL_WE);
-				}
-				break;
-			case STOP_IN:
-				startTimer(TrafficLight.TIME_CHANGE + PRIORITY_INTERVAL_EW);
-				eastTrafficLight.turnToGreen();
-				state = FLOW_OUT_PRIORITY;
-				intervalsDone = 1;
-				carsGoneEW = false;
-				break;
-		}
+		state.timeout();
 	} //timeout
 }

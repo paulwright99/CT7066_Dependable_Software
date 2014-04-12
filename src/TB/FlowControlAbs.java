@@ -37,7 +37,7 @@ public abstract class FlowControlAbs extends Thread implements ActionListener
 	  start a timer for a given number of seconds
 	  @param seconds the duration of the timer
 	 */
-	protected void startTimer(int seconds)
+	public void startTimer(int seconds)
 	{
 		myTimer = new Timer((int)((double)(seconds * 1000) / TB.timeMultiplier), this);
 		myTimer.start();
