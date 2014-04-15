@@ -29,7 +29,19 @@ package TB;
 */
 public class FlowControl extends FlowControlAbs implements FlowState
 {
+	// State model is being used for this run 
+
+	public static StateModel currentStateModel = StateModel.STATEMODEL_OLD;
+	
+	public enum StateModel
+	{
+		STATEMODEL_OLD,
+		STATEMODEL_NEW;
+	}
+	
+	
 	// State attributes
+	public int oldState;
 	public FlowState state;
 	public FlowState flowOutPriority;
 	public FlowState flowOut;
@@ -51,15 +63,30 @@ public class FlowControl extends FlowControlAbs implements FlowState
 	protected static final int EAST_END = 1;
     
 	
-	//timer constants
+	// New state model timer constants
 	public static final int PRIORITY_INTERVAL_EW = 5;
 	public static final int NORMAL_INTERVAL_EW = 1;
 	public static final int NORMAL_INTERVAL_WE = 5;
-	public static final int TIME_CLEAR = 12;
 	
-	
-	// count constants
+	// New state model count constants
 	protected static final int PRIORITY_INTERVAL_NUM = 4;
+	
+
+	// Old state model state constants
+	protected static final int FLOW_OUT_MIN = 1;
+	protected static final int FLOW_OUT = 2;
+	protected static final int STOP_OUT = 3;
+	protected static final int FLOW_IN = 4;
+	protected static final int STOP_IN = 5;
+
+	
+	// Old state model timer constraints
+	
+	public static final int TIME_CLEAR = 12;
+	protected static final int MIN_EW = 20;
+	protected static final int MAX_WAIT = 10;
+	protected static final int TIME_ONE_SECOND = 1;
+	
 	
 	/**
 	  Constructor for FlowControl
@@ -85,7 +112,15 @@ public class FlowControl extends FlowControlAbs implements FlowState
 	*/
     protected void startRunning()
 	{
-		state = stopIn; //initial state
+		if( currentStateModel == StateModel.STATEMODEL_NEW )
+		{
+			state = stopIn; //initial state
+		}
+		else
+		{
+			oldState = STOP_IN;
+		}
+		
 		startTimer(TIME_CLEAR); //initial timer
 		carsGoneEW = false;
 		intervalsDone = 0;
@@ -94,8 +129,52 @@ public class FlowControl extends FlowControlAbs implements FlowState
     /**
 	  performs timed actions according to State Diagram
     */
-	public void timeout()
-	{
-		state.timeout();
-	} //timeout
+    public void timeout()
+    {
+    	if( currentStateModel == StateModel.STATEMODEL_NEW )
+    	{
+    		state.timeout();
+    	}
+    	else
+    	{
+    		switch (oldState)
+    		{
+    		case FLOW_OUT_MIN:
+    			startTimer(TIME_ONE_SECOND);
+    			oldState = FLOW_OUT;
+    			break;
+    		case FLOW_OUT:
+    			if (westVehicleSensor.vehicleSensed())
+    			{
+    				// guard is true
+    				startTimer(TIME_CLEAR);
+    				eastTrafficLight.turnToRed();
+    				oldState = STOP_OUT;
+    			}
+    			else
+    			{
+    				// continue in current state
+    				startTimer(TIME_ONE_SECOND);
+    			}
+    			break;
+    		case STOP_OUT:
+    			startTimer(MAX_WAIT);
+    			westTrafficLight.turnToGreen();
+    			oldState = FLOW_IN;
+    			break;
+    		case FLOW_IN:
+    			startTimer(TIME_CLEAR);
+    			westTrafficLight.turnToRed();
+    			oldState = STOP_IN;
+    			break;
+    		case STOP_IN:
+    			startTimer(MIN_EW);
+    			eastTrafficLight.turnToGreen();
+    			oldState = FLOW_OUT_MIN;
+    			break;
+    		}
+    	}
+
+
+    } //timeout
 }

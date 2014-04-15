@@ -1,8 +1,17 @@
 package TB;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Random;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
   Tewkester Bridge animation system
@@ -15,7 +24,17 @@ public class TB extends JFrame
 	 * 
 	 */
 	// My variables
-	public static final double timeMultiplier = 4.0;
+	public static final double timeMultiplier = 10.0;
+	private static int statsCrashes;
+	private static int statsCarsGoneWE;
+	private static int statsCarsGoneEW;
+	private static int statsSeconds;
+	private static int statsCarsWaitingWE;
+	private static int statsCarsWaitingEW;
+	private static double statsCarsWaitingWEAverage;
+	private static double statsCarsWaitingEWAverage;
+	
+	
 	//private static int eastCars = 0;
 	
 	
@@ -26,10 +45,16 @@ public class TB extends JFrame
 	private static final int MAX_LIGHTS = 3;
 	private static final int WEST_END = 0;
 	private static final int EAST_END = 1;
+	
+	private static final int CARS_PER_MINUTE_WE = 2;
+	private static final int CARS_PER_MINUTE_EW = 8;
+	
+	private static final int SECONDS_RUNNING = 600;
+	
 
     // GUI variables	
-	private static JButton eastButton;
-	private static JButton westButton;
+	//private static JButton eastButton;
+	//private static JButton westButton;
 	private JPanel buttonPanel;
 	private JPanel flowPanel;
 	private JPanel eastWaitPanel;
@@ -47,6 +72,17 @@ public class TB extends JFrame
 	private JLabel buttonLabel;
 	private BorderLayout layout;
 	
+	private static JPanel statisticsPanel;
+	private static JLabel displayCrashes;
+	private static JLabel displayCarsGoneEW;
+	private static JLabel displayCarsGoneWE;
+	private static JLabel displaySeconds;
+	private static JLabel displayCarsWaitingWE;
+	private static JLabel displayCarsWaitingEW;
+	private static JLabel displayCarsWaitingWEAverage;
+	private static JLabel displayCarsWaitingEWAverage;
+	private static JLabel displayCarsGoneTotal;	
+	
     //control variables
 	private static boolean directionWE = true;
 	private static boolean eastGreen = false;
@@ -58,6 +94,10 @@ public class TB extends JFrame
 	
 	//protected static FlowControl myFlowControl;
 		
+	//Random number generator
+	private static Random random = new Random(1);
+	
+	
 	public TB()
 	{
 		super("Tewkester Bridge Animator - January 2013");
@@ -76,17 +116,122 @@ public class TB extends JFrame
 		flowPanel = new JPanel();
 		flowPanel.setLayout(new BorderLayout(0, 2));
 		flowPanel.setBackground(Color.white);
-		buttonPanel = new JPanel();
-		buttonPanel.setLayout(new FlowLayout());
-		buttonPanel.setBackground(Color.white);
-		westButton = new JButton("West");
-		buttonPanel.add(westButton);
-		buttonLabel = new JLabel("indicate arrivals");
-		buttonPanel.add(buttonLabel);
-		eastButton = new JButton("East");
-		buttonPanel.add(eastButton);
-		flowPanel.add(buttonPanel, BorderLayout.SOUTH);
+//		buttonPanel = new JPanel();
+//		buttonPanel.setLayout(new FlowLayout());
+//		buttonPanel.setBackground(Color.white);
+//		westButton = new JButton("West");
+//		buttonPanel.add(westButton);
+//		buttonLabel = new JLabel("indicate arrivals");
+//		buttonPanel.add(buttonLabel);
+		//eastButton = new JButton("East");
+		//buttonPanel.add(eastButton);
+//		flowPanel.add(buttonPanel, BorderLayout.CENTER);
 
+		// Statistics display initialisation
+		
+		statisticsPanel = new JPanel();
+		statisticsPanel.setLayout(new GridLayout(0,6));
+		statisticsPanel.setBackground(Color.white);
+		statsCrashes = 0;
+		statsCarsGoneWE = 0;
+		statsCarsGoneEW = 0;
+		statsSeconds = 0;
+		statsCarsWaitingWE = 0;
+		statsCarsWaitingEW = 0;
+		statsCarsWaitingWEAverage = 0.0;
+		statsCarsWaitingEWAverage = 0.0;
+
+		displayCrashes = new JLabel(String.valueOf(statsCrashes));
+		displayCarsGoneWE = new JLabel(String.valueOf(statsCarsGoneWE));
+		displayCarsGoneEW = new JLabel(String.valueOf(statsCarsGoneEW));
+		displaySeconds = new JLabel(String.valueOf(statsSeconds));
+		displayCarsWaitingWE = new JLabel(String.valueOf(statsCarsWaitingWE));
+		displayCarsWaitingEW = new JLabel(String.valueOf(statsCarsWaitingEW));
+		displayCarsWaitingWEAverage = new JLabel(String.valueOf(statsCarsWaitingWEAverage));
+		displayCarsWaitingEWAverage = new JLabel(String.valueOf(statsCarsWaitingEWAverage));
+		displayCarsGoneTotal = new JLabel(String.valueOf(statsCarsGoneEW + statsCarsGoneWE));
+		
+		
+		// Row 2
+		statisticsPanel.add(new JLabel(""));
+		statisticsPanel.add(new JLabel(""));
+		if( FlowControl.currentStateModel == FlowControl.StateModel.STATEMODEL_NEW)
+		{
+				statisticsPanel.add(new JLabel("NEW STATE MODEL"));
+		}
+		else
+		{
+				statisticsPanel.add(new JLabel("OLD STATE_MODEL"));
+		}
+				
+		statisticsPanel.add(new JLabel(""));
+		statisticsPanel.add(new JLabel(""));
+		statisticsPanel.add(new JLabel(""));
+		
+		// Row 2
+		statisticsPanel.add(new JLabel("------------------"));
+		statisticsPanel.add(new JLabel(""));
+		statisticsPanel.add(new JLabel("------------"));
+		statisticsPanel.add(new JLabel(""));
+		statisticsPanel.add(new JLabel("------------------"));
+		statisticsPanel.add(new JLabel(""));
+		
+		// Row 1
+		statisticsPanel.add(new JLabel("West to East"));
+		statisticsPanel.add(new JLabel(""));
+		statisticsPanel.add(new JLabel("General"));
+		statisticsPanel.add(new JLabel(""));
+		statisticsPanel.add(new JLabel("East to West"));
+		statisticsPanel.add(new JLabel(""));
+		
+		// Row 2
+		statisticsPanel.add(new JLabel("------------------"));
+		statisticsPanel.add(new JLabel(""));
+		statisticsPanel.add(new JLabel("------------"));
+		statisticsPanel.add(new JLabel(""));
+		statisticsPanel.add(new JLabel("------------------"));
+		statisticsPanel.add(new JLabel(""));
+		
+		// Row 3
+		statisticsPanel.add(new JLabel("Cars waiting currently:"));
+		statisticsPanel.add(displayCarsWaitingWE);
+		statisticsPanel.add(new JLabel("Crashes:"));
+		statisticsPanel.add(displayCrashes);
+		statisticsPanel.add(new JLabel("Cars waiting currently:"));
+		statisticsPanel.add(displayCarsWaitingEW);
+		
+		// Row 4		
+		statisticsPanel.add(new JLabel("Cars gone:"));
+		statisticsPanel.add(displayCarsGoneWE);
+		statisticsPanel.add(new JLabel("Seconds gone:"));
+		statisticsPanel.add(displaySeconds);
+		statisticsPanel.add(new JLabel("Cars gone:"));
+		statisticsPanel.add(displayCarsGoneEW);
+		
+		// Row 5
+		statisticsPanel.add(new JLabel("Cars waiting average:"));
+		statisticsPanel.add(displayCarsWaitingWEAverage);
+		statisticsPanel.add(new JLabel("Total cars Gone:"));
+		statisticsPanel.add(displayCarsGoneTotal);
+		statisticsPanel.add(new JLabel("Cars waiting average:"));
+		statisticsPanel.add(displayCarsWaitingEWAverage);
+		
+		// Row 6
+		statisticsPanel.add(new JLabel("Cars arriving/min:"));
+		statisticsPanel.add(new JLabel(String.valueOf(CARS_PER_MINUTE_WE)));
+		statisticsPanel.add(new JLabel(""));
+		statisticsPanel.add(new JLabel(""));
+		statisticsPanel.add(new JLabel("Cars arriving/min:"));
+		statisticsPanel.add(new JLabel(String.valueOf(CARS_PER_MINUTE_EW)));
+
+		
+
+
+		
+		flowPanel.add(statisticsPanel, BorderLayout.SOUTH);
+		
+		
+		
         //set up road with wait areas above & below
 		carPanel = new JPanel();
 		carPanel.setLayout(new GridLayout(1, MAX_CARS, 0, 2));
@@ -158,13 +303,13 @@ public class TB extends JFrame
 		c.add(westLightPanel, BorderLayout.WEST);
 		
         // set up button handlers
-		ButtonHandler handler = new ButtonHandler();
-		eastButton.addActionListener(handler);
-		westButton.addActionListener(handler);
+//		ButtonHandler handler = new ButtonHandler();
+//		eastButton.addActionListener(handler);
+//		westButton.addActionListener(handler);
 		
         //set size of window
         //needed to adjust Xwidth to make cars fit right-hand edge
-		setSize(500, 200);
+		setSize(850, 400);
 		setVisible(true);
 	} //TB
  
@@ -186,10 +331,49 @@ public class TB extends JFrame
 		
 		boolean continuing = true; 
         
-        //start the main animation loop
-		while (continuing)
+		//start the main animation loop
+		while (statsSeconds < SECONDS_RUNNING)
 		{
 			Thread.sleep((long)(1000.0/timeMultiplier));
+
+
+			// Automatically set cars to arrive at west end
+			if ( (random.nextInt(60) + 1) <= CARS_PER_MINUTE_WE )
+			{
+				statsCarsWaitingWE++;
+			}
+
+
+			if( !carWaiting[WEST_END] && !carSensed[WEST_END] && statsCarsWaitingWE > 0)
+			{
+
+				carWaiting[WEST_END] = true;
+				carSensed[WEST_END] = true;
+				sensorTriggered[WEST_END] = false;
+				westWaitPos[0].setVisible(true);
+				westWaitPos[1].setVisible(true);
+			}
+			
+
+			// Automatically set cars to arrive at east end
+			if ( (random.nextInt(60) + 1) <= CARS_PER_MINUTE_EW )
+			{
+				statsCarsWaitingEW++;
+			}
+
+
+			if( !carWaiting[EAST_END] && !carSensed[EAST_END] && statsCarsWaitingEW > 0)
+			{
+
+				carWaiting[EAST_END] = true;
+				carSensed[EAST_END] = true;
+				sensorTriggered[EAST_END] = false;
+				eastWaitPos[westWaitPos.length - 1].setVisible(true);
+				eastWaitPos[westWaitPos.length - 2].setVisible(true);
+			}
+			
+			
+			
 			if (directionWE)
 			{
                 // direction of flow is west-to-east
@@ -210,6 +394,8 @@ public class TB extends JFrame
                     carPresent[0] = true;
                     carPresent[1] = true;
    			
+                    statsCarsGoneWE++;
+                    statsCarsWaitingWE--;
 				}
                 
                 if (carSensed[WEST_END]
@@ -220,7 +406,7 @@ public class TB extends JFrame
                 {
                     //car has just moved out of sensor range
                     carSensed[WEST_END] = false;
-                    westButton.setEnabled(true);
+                    //westButton.setEnabled(true);
 				}
 			}
 			else
@@ -245,6 +431,9 @@ public class TB extends JFrame
                     carPresent[MAX_CARS - 2] = true;
                 
                     FlowControl.carsGoneEW = true;
+				
+                    statsCarsGoneEW++;
+                    statsCarsWaitingEW--;
 				}
                 
                 if (carSensed[EAST_END]
@@ -254,7 +443,7 @@ public class TB extends JFrame
                 {
                     //car has just moved out of sensor range
                     carSensed[EAST_END] = false;
-                    eastButton.setEnabled(true);
+                    //eastButton.setEnabled(true);
 				}
 			}
 			
@@ -263,39 +452,60 @@ public class TB extends JFrame
 			{
 				carPos[i].setVisible(carPresent[i]);
 			}
+		
+			// Update stats display
+			statsSeconds++;
+			
+			
+			statsCarsWaitingWEAverage = ((double)statsCarsWaitingWE + (statsCarsWaitingWEAverage * (double)(statsSeconds - 1))) / (double)statsSeconds; 
+			statsCarsWaitingEWAverage = ((double)statsCarsWaitingEW + (statsCarsWaitingEWAverage * (double)(statsSeconds - 1))) / (double)statsSeconds; 
+			
+			displayCarsWaitingWE.setText(String.valueOf(statsCarsWaitingWE));
+			displayCrashes.setText(String.valueOf(statsCrashes));
+			displayCarsGoneWE.setText(String.valueOf(statsCarsGoneWE));
+			displayCarsGoneEW.setText(String.valueOf(statsCarsGoneEW));
+			displaySeconds.setText(String.valueOf(statsSeconds));
+			displayCarsWaitingEW.setText(String.valueOf(statsCarsWaitingEW));
+			displayCarsGoneTotal.setText(String.valueOf(statsCarsGoneEW + statsCarsGoneWE));
+			displayCarsWaitingWEAverage.setText(String.format("%.2f", statsCarsWaitingWEAverage));
+			displayCarsWaitingEWAverage.setText(String.format("%.2f", statsCarsWaitingEWAverage));
+			
 		}
+	
+		while(true);
+	
 	} //main
 	
-	private class ButtonHandler implements ActionListener
-	{
-		public void actionPerformed(ActionEvent e)
-		{
-			String end = e.getActionCommand();
-			if (end.equals("East"))
-			{
-				eastButton.setEnabled(false);
-                carWaiting[EAST_END] = true;
-                carSensed[EAST_END] = true;
-                //eastCars++;
-                //System.err.println(eastCars);
-                
-                //carWaiting[EAST_END - 1] = true;
-                //carSensed[EAST_END - 1] = true;
-                sensorTriggered[EAST_END] = false;
-                eastWaitPos[eastWaitPos.length - 1].setVisible(true);
-                eastWaitPos[eastWaitPos.length - 2].setVisible(true);
-			}
-			else
-			{
-				westButton.setEnabled(false);
-                carWaiting[WEST_END] = true;
-                carSensed[WEST_END] = true;
-                sensorTriggered[WEST_END] = false;
-                westWaitPos[0].setVisible(true);
-                westWaitPos[1].setVisible(true);
-			}
-		}
-	} //ButtonHandler
+//	private class ButtonHandler implements ActionListener
+//	{
+//		public void actionPerformed(ActionEvent e)
+//		{
+//			String end = e.getActionCommand();
+//			if (end.equals("East"))
+//			{
+//				eastButton.setEnabled(false);
+//                carWaiting[EAST_END] = true;
+//                carSensed[EAST_END] = true;
+//                //eastCars++;
+//                //System.err.println(eastCars);
+//                
+//                //carWaiting[EAST_END - 1] = true;
+//                //carSensed[EAST_END - 1] = true;
+//                sensorTriggered[EAST_END] = false;
+//                eastWaitPos[eastWaitPos.length - 1].setVisible(true);
+//                eastWaitPos[eastWaitPos.length - 2].setVisible(true);
+//			}
+//			else
+//			{
+//				westButton.setEnabled(false);
+//                carWaiting[WEST_END] = true;
+//                carSensed[WEST_END] = true;
+//                sensorTriggered[WEST_END] = false;
+//                westWaitPos[0].setVisible(true);
+//                westWaitPos[1].setVisible(true);
+//			}
+//		}
+//	} //ButtonHandler
  
  	public static void turnLamp(int end, int lampID, boolean turnOn)
 	{
@@ -315,6 +525,9 @@ public class TB extends JFrame
 				{
 					// green lamp on
 					directionWE = false;
+				
+					//Check if there are any cars still on the road (potential crashes)
+					if( carsOnBridge() ) statsCrashes++;
 				}
 			}
 		}
@@ -332,6 +545,9 @@ public class TB extends JFrame
 				{
 					// green lamp on
 					directionWE = true;
+					
+					//Check if there are any cars still on the road (potential crashes)
+					if( carsOnBridge() ) statsCrashes++;
 				}
 			}
 		}
@@ -351,4 +567,15 @@ public class TB extends JFrame
         else
             return false;
 	} //checkWaiting
+ 	
+ 	public static boolean carsOnBridge()
+ 	{
+ 		for( boolean position : carPresent )
+ 		{
+ 			if( position == true ) return true;
+ 		}
+ 	
+ 		return false;
+ 	}
+ 	
 } //TB
