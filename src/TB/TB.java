@@ -24,7 +24,7 @@ public class TB extends JFrame
 	 * 
 	 */
 	// My variables
-	public static final double timeMultiplier = 10.0;
+	public static final double timeMultiplier = 5.0;
 	private static int statsCrashes;
 	private static int statsCarsGoneWE;
 	private static int statsCarsGoneEW;
@@ -46,8 +46,8 @@ public class TB extends JFrame
 	private static final int WEST_END = 0;
 	private static final int EAST_END = 1;
 	
-	private static final int CARS_PER_MINUTE_WE = 8;
-	private static final int CARS_PER_MINUTE_EW = 2;
+	private static final int CARS_PER_MINUTE_WE = 2;
+	private static final int CARS_PER_MINUTE_EW = 8;
 	
 	private static final int SECONDS_RUNNING = 600;
 	

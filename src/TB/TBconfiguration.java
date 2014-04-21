@@ -23,8 +23,8 @@ public class TBconfiguration
 		TB myTB = new TB();
 
 		// create objects needed for this system
-		eastTrafficLight = new TrafficLight(EAST_END);
-		westTrafficLight = new TrafficLight(WEST_END);
+		eastTrafficLight = new FrenchTrafficLight(EAST_END);
+		westTrafficLight = new FrenchTrafficLight(WEST_END);
 		eastVehicleSensor = new VehicleSensor(EAST_END);
 		westVehicleSensor = new VehicleSensor(WEST_END);
 		myFlowControl = new FlowControl(

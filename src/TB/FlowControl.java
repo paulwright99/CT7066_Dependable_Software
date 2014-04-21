@@ -31,7 +31,7 @@ public class FlowControl extends FlowControlAbs implements FlowState
 {
 	// State model is being used for this run 
 
-	public static StateModel currentStateModel = StateModel.STATEMODEL_OLD;
+	public static StateModel currentStateModel = StateModel.STATEMODEL_NEW;
 	
 	public enum StateModel
 	{
@@ -82,7 +82,7 @@ public class FlowControl extends FlowControlAbs implements FlowState
 	
 	// Old state model timer constraints
 	
-	public static final int TIME_CLEAR = 12;
+	public static final int TIME_CLEAR = 14;
 	protected static final int MIN_EW = 20;
 	protected static final int MAX_WAIT = 10;
 	protected static final int TIME_ONE_SECOND = 1;
